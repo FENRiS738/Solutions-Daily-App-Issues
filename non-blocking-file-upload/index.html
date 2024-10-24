@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Video Upload with AJAX</title>
+</head>
+<body>
+  <h1>Video Upload</h1>
+
+  <!-- Upload form -->
+  <form id="uploadForm">
+    <input type="file" id="videoFile" accept="video/*" required>
+    <button type="submit">Upload Video</button>
+  </form>
+
+  <!-- Progress bar -->
+  <div id="progressWrapper" style="display: none;">
+    <label for="progress">Upload Progress:</label>
+    <progress id="progress" value="0" max="100"></progress>
+  </div>
+
+  <!-- Success/Error message -->
+  <p id="message"></p>
+
+  <script>
+    document.getElementById('uploadForm').addEventListener('submit', function (e) {
+      e.preventDefault();  // Prevent form from submitting the default way
+
+      const fileInput = document.getElementById('videoFile');
+      const file = fileInput.files[0];
+
+      if (!file) {
+        alert('Please select a video file to upload.');
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append('video', file);
+
+      // Create a new AJAX request
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', 'http://127.0.0.1:5000/upload-video', true);  // Adjust this to match your backend route
+
+      // Show the progress bar
+      document.getElementById('progressWrapper').style.display = 'block';
+
+      // Track upload progress
+      xhr.upload.onprogress = function (event) {
+        if (event.lengthComputable) {
+          const percentComplete = (event.loaded / event.total) * 100;
+          document.getElementById('progress').value = percentComplete;
+        }
+      };
+
+      // Handle server response
+      xhr.onload = function () {
+        if (xhr.status === 200) {
+          document.getElementById('message').textContent = 'Upload complete!';
+        } else {
+          document.getElementById('message').textContent = `Error during upload.${xhr.statusText}`;
+        }
+      };
+
+      // Handle upload error
+      xhr.onerror = function () {
+        document.getElementById('message').textContent = 'Error: Upload failed.';
+      };
+
+      // Send the file asynchronously
+      xhr.send(formData);
+    });
+  </script>
+</body>
+</html>
